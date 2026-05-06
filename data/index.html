@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LED Controller Config</title>
+  <style>
+    :root {
+      --bg: #0f1220;
+      --panel: #171b2e;
+      --text: #e8ebff;
+      --muted: #9aa3c7;
+      --accent: #4dd4ff;
+      --border: #2a3152;
+      --track: #252c4a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: radial-gradient(circle at top, #1b2140 0%, var(--bg) 65%);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: color-mix(in srgb, var(--panel) 92%, #000 8%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      font-size: 1.35rem;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 18px;
+      font-size: 0.95rem;
+    }
+
+    .section {
+      margin-bottom: 16px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.01);
+    }
+
+    .section h2 {
+      font-size: 1rem;
+      margin-bottom: 12px;
+      color: #cdd5ff;
+    }
+
+    .field {
+      margin-bottom: 12px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .label-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+      gap: 10px;
+    }
+
+    label {
+      font-size: 0.92rem;
+      color: #d9ddf7;
+    }
+
+    .value {
+      color: var(--accent);
+      font-weight: 600;
+      min-width: 44px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    input[type="number"] {
+      width: 100%;
+      background: #0f1430;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      outline: none;
+    }
+
+    input[type="number"]:focus,
+    input[type="range"]:focus-visible {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px rgba(77, 212, 255, 0.2);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .color-preview {
+      height: 38px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-top: 8px;
+    }
+
+    .toggle {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .switch {
+      position: relative;
+      width: 56px;
+      height: 32px;
+      display: inline-block;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #4a527a;
+      border-radius: 999px;
+      transition: background 0.2s ease;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: "";
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      left: 4px;
+      top: 4px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.2s ease;
+    }
+
+    .switch input:checked + .slider {
+      background: #2bbf66;
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(24px);
+    }
+
+    .direction-value {
+      color: var(--accent);
+      font-weight: 600;
+      min-width: 96px;
+      text-align: right;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .save-status {
+      color: var(--muted);
+      font-size: 0.9rem;
+      min-height: 20px;
+    }
+
+    .save-btn {
+      border: 1px solid #2f8bb8;
+      background: linear-gradient(180deg, #2fa5d8 0%, #2382af 100%);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .save-btn:hover {
+      filter: brightness(1.05);
+    }
+
+    .save-btn:active {
+      transform: translateY(1px);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    @media (min-width: 740px) {
+      .grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>LED Controller</h1>
+    <p class="subtitle">Configure strip color and animation effect settings.</p>
+
+    <section class="section">
+      <h2>Strip Setup</h2>
+      <div class="field">
+        <div class="label-row">
+          <label for="ledCount">Amount of LEDs</label>
+        </div>
+        <input id="ledCount" type="number" min="1" step="1" value="60" />
+      </div>
+    </section>
+
+    <div class="grid">
+      <section class="section">
+        <h2>Base Color</h2>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="baseR">Red</label>
+            <span id="baseRValue" class="value">128</span>
+          </div>
+          <input id="baseR" type="range" min="0" max="255" value="128" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="baseG">Green</label>
+            <span id="baseGValue" class="value">128</span>
+          </div>
+          <input id="baseG" type="range" min="0" max="255" value="128" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="baseB">Blue</label>
+            <span id="baseBValue" class="value">128</span>
+          </div>
+          <input id="baseB" type="range" min="0" max="255" value="128" />
+        </div>
+
+        <div id="basePreview" class="color-preview" aria-label="Base color preview"></div>
+      </section>
+
+      <section class="section">
+        <h2>Effect Color</h2>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="effectR">Red</label>
+            <span id="effectRValue" class="value">255</span>
+          </div>
+          <input id="effectR" type="range" min="0" max="255" value="255" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="effectG">Green</label>
+            <span id="effectGValue" class="value">64</span>
+          </div>
+          <input id="effectG" type="range" min="0" max="255" value="64" />
+        </div>
+
+        <div class="field">
+          <div class="label-row">
+            <label for="effectB">Blue</label>
+            <span id="effectBValue" class="value">64</span>
+          </div>
+          <input id="effectB" type="range" min="0" max="255" value="64" />
+        </div>
+
+        <div id="effectPreview" class="color-preview" aria-label="Effect color preview"></div>
+      </section>
+    </div>
+
+    <section class="section">
+      <h2>Effect Parameters</h2>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="effectLength">Effect Length</label>
+          <span id="effectLengthValue" class="value">10</span>
+        </div>
+        <input id="effectLength" type="range" min="1" max="100" value="10" />
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="effectCount">Amount of Effects</label>
+          <span id="effectCountValue" class="value">3</span>
+        </div>
+        <input id="effectCount" type="range" min="1" max="20" value="3" />
+      </div>
+
+      <div class="field">
+        <div class="label-row">
+          <label for="effectSpeed">Effect Speed</label>
+          <span id="effectSpeedValue" class="value">100</span>
+        </div>
+        <input id="effectSpeed" type="range" min="1" max="1000" value="100" />
+      </div>
+
+      <div class="field toggle">
+        <label for="effectDirection">Effect Direction</label>
+        <span id="directionText" class="direction-value">Forward</span>
+        <label class="switch" aria-label="Toggle effect direction">
+          <input id="effectDirection" type="checkbox" />
+          <span class="slider"></span>
+        </label>
+      </div>
+    </section>
+
+    <div class="actions">
+      <span id="saveStatus" class="save-status" aria-live="polite"></span>
+      <button id="saveConfig" class="save-btn" type="button">Save</button>
+    </div>
+  </main>
+
+  <script>
+    function bindRange(rangeId, valueId) {
+      var range = document.getElementById(rangeId);
+      var value = document.getElementById(valueId);
+
+      function sync() {
+        value.textContent = range.value;
+      }
+
+      range.addEventListener("input", sync);
+      sync();
+      return range;
+    }
+
+    function rgbFrom(r, g, b) {
+      return "rgb(" + r.value + ", " + g.value + ", " + b.value + ")";
+    }
+
+    var baseR = bindRange("baseR", "baseRValue");
+    var baseG = bindRange("baseG", "baseGValue");
+    var baseB = bindRange("baseB", "baseBValue");
+
+    var effectR = bindRange("effectR", "effectRValue");
+    var effectG = bindRange("effectG", "effectGValue");
+    var effectB = bindRange("effectB", "effectBValue");
+
+    bindRange("effectLength", "effectLengthValue");
+    bindRange("effectCount", "effectCountValue");
+    bindRange("effectSpeed", "effectSpeedValue");
+    var basePreview = document.getElementById("basePreview");
+    var effectPreview = document.getElementById("effectPreview");
+
+    function syncPreviews() {
+      basePreview.style.background = rgbFrom(baseR, baseG, baseB);
+      effectPreview.style.background = rgbFrom(effectR, effectG, effectB);
+    }
+
+    [baseR, baseG, baseB, effectR, effectG, effectB].forEach(function (el) {
+      el.addEventListener("input", syncPreviews);
+    });
+    syncPreviews();
+
+    var directionToggle = document.getElementById("effectDirection");
+    var directionText = document.getElementById("directionText");
+    var ledCountInput = document.getElementById("ledCount");
+    var effectLength = document.getElementById("effectLength");
+    var effectCount = document.getElementById("effectCount");
+    var effectSpeed = document.getElementById("effectSpeed");
+    var saveButton = document.getElementById("saveConfig");
+    var saveStatus = document.getElementById("saveStatus");
+
+    function syncDirection() {
+      directionText.textContent = directionToggle.checked ? "Reverse" : "Forward";
+    }
+
+    directionToggle.addEventListener("change", syncDirection);
+    syncDirection();
+
+    function buildConfig() {
+      return {
+        ledCount: Number(ledCountInput.value),
+        baseColor: {
+          r: Number(baseR.value),
+          g: Number(baseG.value),
+          b: Number(baseB.value)
+        },
+        effectColor: {
+          r: Number(effectR.value),
+          g: Number(effectG.value),
+          b: Number(effectB.value)
+        },
+        effectLength: Number(effectLength.value),
+        effectCount: Number(effectCount.value),
+        effectSpeed: Number(effectSpeed.value),
+        direction: directionToggle.checked ? "reverse" : "forward"
+      };
+    }
+
+    function setStatus(text, color) {
+      saveStatus.textContent = text;
+      saveStatus.style.color = color || "var(--muted)";
+    }
+
+    function applyConfig(config) {
+      if (typeof config.ledCount === "number") {
+        ledCountInput.value = config.ledCount;
+      }
+
+      if (config.baseColor) {
+        if (typeof config.baseColor.r === "number") baseR.value = config.baseColor.r;
+        if (typeof config.baseColor.g === "number") baseG.value = config.baseColor.g;
+        if (typeof config.baseColor.b === "number") baseB.value = config.baseColor.b;
+      }
+
+      if (config.effectColor) {
+        if (typeof config.effectColor.r === "number") effectR.value = config.effectColor.r;
+        if (typeof config.effectColor.g === "number") effectG.value = config.effectColor.g;
+        if (typeof config.effectColor.b === "number") effectB.value = config.effectColor.b;
+      }
+
+      if (typeof config.effectLength === "number") {
+        effectLength.value = config.effectLength;
+      }
+
+      if (typeof config.effectCount === "number") {
+        effectCount.value = config.effectCount;
+      }
+
+      if (typeof config.effectSpeed === "number") {
+        effectSpeed.value = config.effectSpeed;
+      }
+
+      directionToggle.checked = String(config.direction).toLowerCase() === "reverse";
+
+      [baseR, baseG, baseB, effectR, effectG, effectB, effectLength, effectCount, effectSpeed].forEach(function (el) {
+        el.dispatchEvent(new Event("input"));
+      });
+      syncDirection();
+      syncPreviews();
+    }
+
+    function saveConfigToDevice() {
+      var config = buildConfig();
+      var body = new URLSearchParams();
+
+      body.set("ledCount", String(config.ledCount));
+      body.set("baseR", String(config.baseColor.r));
+      body.set("baseG", String(config.baseColor.g));
+      body.set("baseB", String(config.baseColor.b));
+      body.set("effectR", String(config.effectColor.r));
+      body.set("effectG", String(config.effectColor.g));
+      body.set("effectB", String(config.effectColor.b));
+      body.set("effectLength", String(config.effectLength));
+      body.set("effectCount", String(config.effectCount));
+      body.set("effectSpeed", String(config.effectSpeed));
+      body.set("direction", config.direction);
+
+      setStatus("Saving...", "#f5cf6a");
+
+      fetch("/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: body.toString()
+      })
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("Save failed");
+          }
+          return response.text();
+        })
+        .then(function () {
+          setStatus("Saved", "#8ae28f");
+        })
+        .catch(function () {
+          setStatus("Save error", "#ff8e8e");
+        });
+    }
+
+    function loadConfigFromDevice() {
+      setStatus("Loading...", "#f5cf6a");
+
+      fetch("/config")
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("Load failed");
+          }
+          return response.json();
+        })
+        .then(function (config) {
+          applyConfig(config);
+          setStatus("Ready", "#9aa3c7");
+        })
+        .catch(function () {
+          setStatus("Using local defaults", "#ffb86c");
+        });
+    }
+
+    saveButton.addEventListener("click", saveConfigToDevice);
+    loadConfigFromDevice();
+  </script>
+</body>
+</html>
