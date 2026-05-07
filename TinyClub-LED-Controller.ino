@@ -293,6 +293,7 @@ void wifiInit()
     Serial.println("WiFi connected.");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+    digitalWrite(BILTIN_LED_PIN, HIGH);
   }
 }
 
