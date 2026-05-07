@@ -106,44 +106,41 @@ void ledsDrawEffect0()
     return;
   }
 
+  uint16_t effectSpace = cfg.ledCount / cfg.effectCount;
+  uint16_t pointer = effectPointer;
+
   for (uint8_t i = 0; i < cfg.effectCount; i++)
   {
-    uint16_t start = i * (cfg.ledCount / cfg.effectCount) + effectPointer;
+    uint16_t start = (i * effectSpace + pointer) % cfg.ledCount;
 
-    if (start == 0 && !cfg.reverse)
+    if (!cfg.reverse)
     {
-      pixels.setPixelColor(cfg.ledCount - 1, baseColor);
+      start = start == 0 ? cfg.ledCount - 1 : start - 1;
     }
-    else if (start == cfg.ledCount - 1 && cfg.reverse)
+
+    uint8_t stepR = cfg.effectR / (cfg.effectLength - 1);
+    uint8_t stepG = cfg.effectG / (cfg.effectLength - 1);
+    uint8_t stepB = cfg.effectB / (cfg.effectLength - 1);
+
+    for (uint8_t j = 0; j <= cfg.effectLength; j++)
     {
-      pixels.setPixelColor(0, baseColor);
-    }
-    else
-    {
-      if (cfg.reverse)
+      int ledIndex = (start + j) % cfg.ledCount;
+
+      if ((!cfg.reverse && j == 0) || (cfg.reverse && j == cfg.effectLength))
       {
-        pixels.setPixelColor((start + cfg.ledCount - 1) % cfg.ledCount, baseColor);
+        pixels.setPixelColor(ledIndex, pixels.Color(cfg.baseR, cfg.baseG, cfg.baseB));
       }
       else
       {
-        pixels.setPixelColor((start - 1) % cfg.ledCount, baseColor);
+        uint8_t R = !cfg.reverse ? (stepR * (j - 1)) : (stepR * (cfg.effectLength - (j + 1)));
+        uint8_t G = !cfg.reverse ? (stepG * (j - 1)) : (stepG * (cfg.effectLength - (j + 1)));
+        uint8_t B = !cfg.reverse ? (stepB * (j - 1)) : (stepB * (cfg.effectLength - (j + 1)));
+        pixels.setPixelColor(ledIndex, pixels.Color(R, G, B));
       }
-    }
-
-    int directionMultiplier = cfg.reverse ? -1 : 1;
-
-    for (uint8_t j = 0; j < cfg.effectLength; j++)
-    {
-      uint8_t R = cfg.effectR - ((cfg.effectR / cfg.effectLength) * (cfg.effectLength - j));
-      uint8_t G = cfg.effectG - ((cfg.effectG / cfg.effectLength) * (cfg.effectLength - j));
-      uint8_t B = cfg.effectB - ((cfg.effectB / cfg.effectLength) * (cfg.effectLength - j));
-
-      int ledIndex = (start + directionMultiplier * j) % cfg.ledCount;
-      pixels.setPixelColor(ledIndex, pixels.Color(R, G, B));
     }
   }
 
-  effectPointer = (effectPointer + 1) % (cfg.ledCount / cfg.effectCount);
+  effectPointer = cfg.reverse ? (effectPointer == 0 ? cfg.ledCount - 1 : effectPointer - 1) : (effectPointer + 1) % cfg.ledCount;
   pixels.show();
 }
 void ledsDrawEffect1()
