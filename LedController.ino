@@ -206,6 +206,11 @@ void setApEnabled(bool enabled)
     return;
   }
 
+  if (SSID[0] == '\0' && PASSWORD == '\0')
+  {
+    return;
+  }
+
   if (enabled)
   {
     WiFi.mode(WIFI_AP);
@@ -320,31 +325,36 @@ void setup()
     Serial.println("LittleFS mount failed");
   }
 
-  WiFi.mode(WIFI_AP);
-  bool apStarted = WiFi.softAP(AP_SSID, AP_PASSWORD);
-  if (!apStarted)
+  if (SSID[0] == '\0' || PASSWORD[0] == '\0')
   {
-    Serial.println("Failed to start AP");
-    apEnabled = false;
+    WiFi.mode(WIFI_AP);
+    bool apStarted = WiFi.softAP(AP_SSID, AP_PASSWORD);
+    if (!apStarted)
+    {
+      Serial.println("Failed to start AP");
+      apEnabled = false;
+    }
+    else
+    {
+      apEnabled = true;
+      IPAddress ip = WiFi.softAPIP();
+      Serial.print("AP enabled. IP: ");
+      Serial.println(ip);
+    }
   }
   else
   {
-    apEnabled = true;
-    IPAddress ip = WiFi.softAPIP();
-    Serial.print("AP enabled. IP: ");
-    Serial.println(ip);
+    WiFi.begin(SSID, PASSWORD);
+    while (WiFi.status() != WL_CONNECTED)
+    {
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println("");
+    Serial.println("WiFi connected.");
+    Serial.println("IP address: ");
+    Serial.println(WiFi.localIP());
   }
-
-  // WiFi.begin(SSID, PASSWORD);
-  // while (WiFi.status() != WL_CONNECTED)
-  // {
-  //   delay(500);
-  //   Serial.print(".");
-  // }
-  // Serial.println("");
-  // Serial.println("WiFi connected.");
-  // Serial.println("IP address: ");
-  // Serial.println(WiFi.localIP());
 
   server.on("/", HTTP_GET, handleRoot);
   server.on("/config", HTTP_GET, handleConfigGet);
