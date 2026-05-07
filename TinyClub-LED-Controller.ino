@@ -232,7 +232,7 @@ void wifiSetAP(bool enabled)
     return;
   }
 
-  if (SSID[0] == '\0' && PASSWORD == '\0')
+  if (SSID[0] != '\0' && PASSWORD[0] != '\0')
   {
     return;
   }
