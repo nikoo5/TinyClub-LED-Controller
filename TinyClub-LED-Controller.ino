@@ -218,6 +218,20 @@ void prefsSaveConfig()
   prefs.putInt("effSpd", cfg.effectSpeed);
   prefs.putBool("reverse", cfg.reverse);
 }
+void prefsSetDefaults()
+{
+  cfg.ledCount = 600;
+  cfg.baseR = 128;
+  cfg.baseG = 128;
+  cfg.baseB = 128;
+  cfg.effectR = 0;
+  cfg.effectG = 0;
+  cfg.effectB = 128;
+  cfg.effectLength = 10;
+  cfg.effectCount = 3;
+  cfg.effectSpeed = 1000;
+  cfg.reverse = false;
+}
 void prefsSetup()
 {
   prefs.begin("ledcfg", false);
@@ -449,6 +463,8 @@ void setup()
   serverSetup();
 
   wifiSetAP(false);
+
+  // prefsSetDefaults(); //Uncomment this line to reset saved config to defaults on next boot
 }
 void loop()
 {
